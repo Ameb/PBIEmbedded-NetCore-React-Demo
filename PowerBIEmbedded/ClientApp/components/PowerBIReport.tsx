@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 
 export interface TokenInfo {
@@ -9,7 +9,8 @@ export interface TokenInfo {
 }
 
 export class PowerBIReport extends React.Component<TokenInfo, {}> {
-    contructor() {
+    constructor(props: TokenInfo) {
+        super(props);
     }
     public render() {
         return (
