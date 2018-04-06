@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import {PowerBIReport, TokenInfo} from './PowerBIReport';
+import * as pbimodels from "powerbi-models";
 
 interface PowerBILoaderState {
     tokenInfo?: TokenInfo,
@@ -25,13 +26,11 @@ export class PowerBILoader extends React.Component<RouteComponentProps<{}>, Powe
         return contents;
     }
     private static renderContainer(tokenInfo?: TokenInfo) {
-        if (!tokenInfo) return <div></div>;
         return (
-            <PowerBIReport
-                EmbedToken = {tokenInfo.EmbedToken}
-                EmbedUrl = {tokenInfo.EmbedUrl}
-                ReportId = {tokenInfo.ReportId}
-                mode ={tokenInfo.mode}
+            <PowerBIReport {...tokenInfo}
+                type = 'report'
+                permissions = {pbimodels.Permissions.All}
+                tokenType = {pbimodels.TokenType.Embed}
             />
         )
     }

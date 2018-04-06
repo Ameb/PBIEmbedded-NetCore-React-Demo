@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,11 +34,13 @@ namespace PowerBIEmbedded.Controllers
 
     public struct TokenInfo
     {
-        [JsonProperty("EmbedToken")]
+        [JsonProperty("accessToken")]
         public string EmbedToken;
-        [JsonProperty("EmbedUrl")]
+        [JsonProperty("embedUrl")]
         public string EmbedUrl;
-        [JsonProperty("ReportId")]
+        [JsonProperty("datasetId")]
+        public string DatasetId;
+        [JsonProperty("id")]
         public string ReportId;
         [JsonProperty("mode")]
         public string mode;
@@ -201,7 +203,8 @@ namespace PowerBIEmbedded.Controllers
                     mode = accessLevel,
                     EmbedToken = tokenResponse.Token,
                     EmbedUrl = report.EmbedUrl,
-                    ReportId = report.Id
+                    ReportId = report.Id,
+                    DatasetId = report.DatasetId
                 };
             }
         }
