@@ -6,8 +6,8 @@ interface CounterState {
 }
 
 export class Counter extends React.Component<RouteComponentProps<{}>, CounterState> {
-    constructor() {
-        super();
+    constructor(props: RouteComponentProps<{}>) {
+        super(props);
         this.state = { currentCount: 0 };
     }
 
