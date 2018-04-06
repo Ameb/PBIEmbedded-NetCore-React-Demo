@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,10 +23,10 @@ namespace PowerBIEmbedded.Controllers
             Configuration = config;
         }
         [HttpGet("[action]")]
-        public async Task<TokenInfo> GetToken()
+        public async Task<TokenInfo> GetToken(string mode = "")
         {
             var tokenBuilder = new PowerBIToken(Configuration);
-            TokenInfo token = await tokenBuilder.generateToken();
+            TokenInfo token = await tokenBuilder.generateToken(mode);
             return token;
         }
 
