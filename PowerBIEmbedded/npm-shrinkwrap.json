@@ -221,6 +221,12 @@
         "webpack-node-externals": "1.7.2"
       },
       "dependencies": {
+        "es6-promise": {
+          "version": "3.3.1",
+          "resolved": "https://registry.npmjs.org/es6-promise/-/es6-promise-3.3.1.tgz",
+          "integrity": "sha1-oIzd6EzNvzTQJ6FFG8kdS80ophM=",
+          "dev": true
+        },
         "memory-fs": {
           "version": "0.3.0",
           "resolved": "https://registry.npmjs.org/memory-fs/-/memory-fs-0.3.0.tgz",
@@ -1034,10 +1040,9 @@
       "dev": true
     },
     "core-js": {
-      "version": "1.2.7",
-      "resolved": "https://registry.npmjs.org/core-js/-/core-js-1.2.7.tgz",
-      "integrity": "sha1-ZSKUwUZR2yj6k70tX/KYOk8IxjY=",
-      "dev": true
+      "version": "2.5.5",
+      "resolved": "https://registry.npmjs.org/core-js/-/core-js-2.5.5.tgz",
+      "integrity": "sha1-sU3ek2xkDAV5prUMq8wTLdYSfjs="
     },
     "core-util-is": {
       "version": "1.0.2",
@@ -1373,12 +1378,6 @@
         "stackframe": "0.3.1"
       }
     },
-    "es6-promise": {
-      "version": "3.3.1",
-      "resolved": "https://registry.npmjs.org/es6-promise/-/es6-promise-3.3.1.tgz",
-      "integrity": "sha1-oIzd6EzNvzTQJ6FFG8kdS80ophM=",
-      "dev": true
-    },
     "escape-html": {
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/escape-html/-/escape-html-1.0.3.tgz",
@@ -1536,6 +1535,14 @@
         "promise": "7.3.1",
         "setimmediate": "1.0.5",
         "ua-parser-js": "0.7.13"
+      },
+      "dependencies": {
+        "core-js": {
+          "version": "1.2.7",
+          "resolved": "https://registry.npmjs.org/core-js/-/core-js-1.2.7.tgz",
+          "integrity": "sha1-ZSKUwUZR2yj6k70tX/KYOk8IxjY=",
+          "dev": true
+        }
       }
     },
     "file-loader": {
@@ -2670,6 +2677,14 @@
       "dev": true,
       "requires": {
         "es6-promise": "3.3.1"
+      },
+      "dependencies": {
+        "es6-promise": {
+          "version": "3.3.1",
+          "resolved": "https://registry.npmjs.org/es6-promise/-/es6-promise-3.3.1.tgz",
+          "integrity": "sha1-oIzd6EzNvzTQJ6FFG8kdS80ophM=",
+          "dev": true
+        }
       }
     },
     "https-browserify": {
@@ -4401,6 +4416,14 @@
       "requires": {
         "es6-promise": "3.3.1",
         "route-recognizer": "0.1.11"
+      },
+      "dependencies": {
+        "es6-promise": {
+          "version": "3.3.1",
+          "resolved": "https://registry.npmjs.org/es6-promise/-/es6-promise-3.3.1.tgz",
+          "integrity": "sha1-oIzd6EzNvzTQJ6FFG8kdS80ophM=",
+          "dev": true
+        }
       }
     },
     "prepend-http": {
@@ -4543,6 +4566,14 @@
             "promise": "7.3.1",
             "setimmediate": "1.0.5",
             "ua-parser-js": "0.7.13"
+          },
+          "dependencies": {
+            "core-js": {
+              "version": "1.2.7",
+              "resolved": "https://registry.npmjs.org/core-js/-/core-js-1.2.7.tgz",
+              "integrity": "sha1-ZSKUwUZR2yj6k70tX/KYOk8IxjY=",
+              "dev": true
+            }
           }
         },
         "prop-types": {
@@ -4589,6 +4620,14 @@
             "promise": "7.3.1",
             "setimmediate": "1.0.5",
             "ua-parser-js": "0.7.13"
+          },
+          "dependencies": {
+            "core-js": {
+              "version": "1.2.7",
+              "resolved": "https://registry.npmjs.org/core-js/-/core-js-1.2.7.tgz",
+              "integrity": "sha1-ZSKUwUZR2yj6k70tX/KYOk8IxjY=",
+              "dev": true
+            }
           }
         },
         "prop-types": {
@@ -6043,6 +6082,14 @@
       "dev": true,
       "requires": {
         "es6-promise": "3.3.1"
+      },
+      "dependencies": {
+        "es6-promise": {
+          "version": "3.3.1",
+          "resolved": "https://registry.npmjs.org/es6-promise/-/es6-promise-3.3.1.tgz",
+          "integrity": "sha1-oIzd6EzNvzTQJ6FFG8kdS80ophM=",
+          "dev": true
+        }
       }
     },
     "window-size": {
