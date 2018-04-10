@@ -108,12 +108,12 @@ namespace PowerBIEmbedded.Controllers
         public async Task<TokenInfo> generateToken(string mode = "", string username = "", string roles = "")
         {
             string accessLevel;
-            switch (mode)
+            switch (mode.ToUpper())
             {
-                case "edit":
+                case "EDIT":
                     accessLevel = TokenAccessLevel.Edit;
                     break;
-                case "create":
+                case "CREATE":
                     accessLevel = TokenAccessLevel.Create;
                     break;
                 default:
