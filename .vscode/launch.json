@@ -19,8 +19,8 @@
                 "enabled": true,
                 "args": "${auto-detect-url}",
                 "windows": {
-                    "command": "cmd.exe",
-                    "args": "/C start ${auto-detect-url}"
+                //    "command": "cmd.exe",
+                //    "args": "/C start ${auto-detect-url}"
                 },
                 "osx": {
                     "command": "open"
