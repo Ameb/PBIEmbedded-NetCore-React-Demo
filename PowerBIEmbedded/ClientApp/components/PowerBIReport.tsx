@@ -28,12 +28,22 @@ export class PowerBIReport extends React.Component<TokenInfo, {}> {
             </div>
         )
     }
+    private embed() {
+        if (this.props.mode == "Create") {
+            // We need to clone the props object because createReport modifies it and doesn't work with this.props
+            var createProps : TokenInfo;
+            let {...createProps} = this.props;
+            this.report = this.powerbi.createReport(this.ref, createProps) as pbi.Report;
+        } else {
+            this.report = new pbi.Report(this.powerbi, this.ref, this.props);
+        }
+    }
     componentDidMount() {
-        this.report = new pbi.Report(this.powerbi, this.ref, this.props);
+        this.embed();
     }
     componentDidUpdate(prevProps: TokenInfo) {
         if (this.props.accessToken != prevProps.accessToken)
-            this.report = new pbi.Report(this.powerbi, this.ref, this.props);
+            this.embed();
         // change from view to edit mode
         if (this.props.viewMode && prevProps.viewMode != this.props.viewMode) {
                 this.report.switchMode(this.props.viewMode);
