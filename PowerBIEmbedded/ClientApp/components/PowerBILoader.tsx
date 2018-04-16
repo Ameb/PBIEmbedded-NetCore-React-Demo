@@ -6,22 +6,22 @@ import * as pbimodels from "powerbi-models";
 interface PowerBILoaderState {
     tokenInfo?: TokenInfo,
     loading: boolean,
-    user: string
+    user: string,
+    mode: string
 }
 
 export class PowerBILoader extends React.Component<RouteComponentProps<{}>, PowerBILoaderState> {
     constructor(props: any) {
         super(props);
-        this.state = {tokenInfo: undefined, loading: true, user: ''};
+        this.state = {tokenInfo: undefined, loading: true, user: '', mode: 'Create'};
         this.updateData();
-        this.toggleEditMode = this.toggleEditMode.bind(this);
-        this.changeUser = this.changeUser.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+        this.handleSelectChange = this.handleSelectChange.bind(this);
     }
-    private updateData(mode?: pbimodels.ViewMode, user: string = this.state.user) {
-        let url = `\
-api/PowerBI/GetToken\
-${mode == pbimodels.ViewMode.Edit ? '?mode=Edit' : ''}\
-${user ? `?user=${user}` : ''}`;
+    private updateData() {
+        const mode = this.state.mode;
+        const user = this.state.user;
+        let url = `api/PowerBI/GetToken\?mode=${mode}${user ? `&user=${user}` : ''}`;
         fetch(url)
             .then(response => response.json() as Promise<TokenInfo>)
             .then(data => {
@@ -30,18 +30,15 @@ ${user ? `?user=${user}` : ''}`;
                 this.setState({ tokenInfo: data, loading: false, user: user});
             });
     }
-    private toggleEditMode() {
-        if (!this.state.tokenInfo) return
-        if (this.state.tokenInfo.viewMode == pbimodels.ViewMode.Edit)
-            this.updateData(pbimodels.ViewMode.View);
-        else
-            this.updateData(pbimodels.ViewMode.Edit)
+    private handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        this.updateData();
     }
-    private changeUser(e: React.FormEvent<HTMLSelectElement>) {
-        if (!this.state.tokenInfo) return
-        console.log(e)
-        this.updateData(this.state.tokenInfo.viewMode, e.currentTarget.value);
-    }
+    private handleSelectChange(event: React.FormEvent<HTMLSelectElement>) {
+        const name = event.currentTarget.name;
+        const value = event.currentTarget.value;
+        this.setState({[name as any]: value});
+      }
     public render() {
         console.log(this.state);
         let contents = this.state.loading
@@ -50,19 +47,34 @@ ${user ? `?user=${user}` : ''}`;
         return contents;
     }
     private renderContainer() {
+        if (!this.state.tokenInfo) return;
+        let reportProps: TokenInfo = {...this.state.tokenInfo};
+        if (this.state.mode == "Create") {
+            delete(reportProps.reportId);
+            delete(reportProps.id);
+        } else {
+            reportProps.permissions = pbimodels.Permissions.All;
+        }
+        reportProps.tokenType = pbimodels.TokenType.Embed;
+        reportProps.type = 'report';
+        //delete(reportProps.mode);
+
         return (
             <div>
-                <button onClick={this.toggleEditMode}>{this.state.tokenInfo && this.state.tokenInfo.viewMode == pbimodels.ViewMode.Edit ? 'Cambiar a modo Lectura': 'Cambiar a modo edición'}</button>
-                <select name="user" onChange={this.changeUser} value={this.state.user}>
-                <option value="">ibr</option>
-                <option value="bitest1">bitest1</option>
-                <option value="bitest2">bitest2</option>
-                </select>
-                <PowerBIReport {...this.state.tokenInfo}
-                    type = 'report'
-                    permissions = {pbimodels.Permissions.All}
-                    tokenType = {pbimodels.TokenType.Embed}
-                />
+                <form onSubmit = {this.handleSubmit}>
+                    <select name="mode" value={this.state.mode} onChange={this.handleSelectChange}>
+                        <option value="View">View</option>
+                        <option value="Edit">Edit</option>
+                        <option value="Create">Create</option>
+                    </select>
+                    <select name="user" value={this.state.user} onChange={this.handleSelectChange}>
+                        <option value="">ibr</option>
+                        <option value="bitest1">bitest1</option>
+                        <option value="bitest2">bitest2</option>
+                    </select>
+                    <button type="submit">OK</button>
+                </form>
+                <PowerBIReport {...reportProps}/>
             </div>
         )
     }
