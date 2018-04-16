@@ -67,11 +67,13 @@ export class PowerBILoader extends React.Component<RouteComponentProps<{}>, Powe
                         <option value="Edit">Edit</option>
                         <option value="Create">Create</option>
                     </select>
+                    { this.state.mode != "Create" &&
                     <select name="user" value={this.state.user} onChange={this.handleSelectChange}>
                         <option value="">ibr</option>
                         <option value="bitest1">bitest1</option>
                         <option value="bitest2">bitest2</option>
                     </select>
+                    }
                     <button type="submit">OK</button>
                 </form>
                 <PowerBIReport {...reportProps}/>
