@@ -23,10 +23,10 @@ namespace PowerBIEmbedded.Controllers
             Configuration = config;
         }
         [HttpGet("[action]")]
-        public async Task<TokenInfo> GetToken(string mode = "")
+        public async Task<TokenInfo> GetToken(string mode = "", string user = "")
         {
             var tokenBuilder = new PowerBIToken(Configuration);
-            TokenInfo token = await tokenBuilder.generateToken(mode);
+            TokenInfo token = await tokenBuilder.generateToken(mode, user);
             return token;
         }
 
