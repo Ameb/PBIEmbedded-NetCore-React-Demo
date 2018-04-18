@@ -39,12 +39,12 @@ export class ReportPicker extends React.Component<RouteComponentProps<{}>, Repor
         if (!this.state.reports) return;
         function ReportLine(report: Report) {
             return (
-                <li key={report.id}>{report.name}</li>
+                <li className="list-group-item" key={report.id}>{report.name}</li>
             )
         }
         return (
             <div className="col-md-6">
-                <ul className="nav nav-tabs nav-stacked">
+                <ul className="list-group">
                     {this.state.reports.map(report => <ReportLine {...report} />)}
                 </ul>
             </div>
