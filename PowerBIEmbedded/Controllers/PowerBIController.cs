@@ -17,33 +17,26 @@ namespace PowerBIEmbedded.Controllers
     [Route("api/[controller]")]
     public class PowerBIController : Controller
     {
+        private PowerBIToken tokenBuilder;
         public IConfiguration Configuration { get; set; }
         public PowerBIController(IConfiguration config)
         {
             Configuration = config;
+            tokenBuilder = new PowerBIToken(Configuration);
         }
         [HttpGet("[action]")]
         public async Task<TokenInfo> GetToken(string mode = "", string user = "")
         {
-            var tokenBuilder = new PowerBIToken(Configuration);
             TokenInfo token = await tokenBuilder.generateToken(mode, user);
             return token;
         }
         [HttpGet("[action]")]
-        public async Task<ReportInfo[]> GetReportList()
+        public async Task<Report[]> GetReportList()
         {
-            var tokenBuilder = new PowerBIToken(Configuration);
-            ReportInfo[] data = await tokenBuilder.getReportList();
+            Report[] data = await tokenBuilder.getReportList();
             return data;
         }
 
-    }
-    public struct ReportInfo
-    {
-        [JsonProperty("name")]
-        public string Name;
-        [JsonProperty("id")]
-        public string Id;
     }
 
     public struct TokenInfo
@@ -119,19 +112,24 @@ namespace PowerBIEmbedded.Controllers
             [JsonProperty("refresh_token")]
             public string RefreshToken { get; set; }
         }
-        public async Task<ReportInfo[]> getReportList()
+        public async Task<Report[]> getReportList()
         {
-            await Task.Delay(5000);
-            return new ReportInfo[] {
-                new ReportInfo {
-                    Name = "nombre",
-                    Id = "id"
-                },
-                new ReportInfo {
-                    Name = "otro",
-                    Id = "otro id"
-                }
-            };
+            var authenticationResult = await AuthenticateAsync();
+            if (authenticationResult == null)
+            {
+                throw new System.Exception();
+            }
+
+            var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
+
+            // Create a Power BI Client object. It will be used to call Power BI APIs.
+            using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
+            {
+                IList<Report> reportList = client.Reports.GetReports(GroupId).Value;
+                Report[] reportArr = new Report[reportList.Count];
+                reportList.CopyTo(reportArr, 0);
+                return reportArr;
+            }
         }
         public async Task<TokenInfo> generateToken(string mode = "", string username = "", string roles = "")
         {
