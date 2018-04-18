@@ -29,7 +29,21 @@ namespace PowerBIEmbedded.Controllers
             TokenInfo token = await tokenBuilder.generateToken(mode, user);
             return token;
         }
+        [HttpGet("[action]")]
+        public async Task<ReportInfo[]> GetReportList()
+        {
+            var tokenBuilder = new PowerBIToken(Configuration);
+            ReportInfo[] data = await tokenBuilder.getReportList();
+            return data;
+        }
 
+    }
+    public struct ReportInfo
+    {
+        [JsonProperty("name")]
+        public string Name;
+        [JsonProperty("id")]
+        public string Id;
     }
 
     public struct TokenInfo
@@ -104,6 +118,20 @@ namespace PowerBIEmbedded.Controllers
             public string AccessToken { get; set; }
             [JsonProperty("refresh_token")]
             public string RefreshToken { get; set; }
+        }
+        public async Task<ReportInfo[]> getReportList()
+        {
+            await Task.Delay(5000);
+            return new ReportInfo[] {
+                new ReportInfo {
+                    Name = "nombre",
+                    Id = "id"
+                },
+                new ReportInfo {
+                    Name = "otro",
+                    Id = "otro id"
+                }
+            };
         }
         public async Task<TokenInfo> generateToken(string mode = "", string username = "", string roles = "")
         {
