@@ -27,7 +27,7 @@ namespace PowerBIEmbedded.Controllers
         [HttpGet("[action]")]
         public async Task<TokenInfo> GetToken(string mode = "", string user = "")
         {
-            TokenInfo token = await tokenBuilder.generateToken(mode, user);
+            TokenInfo token = await tokenBuilder.getReportToken(mode: mode, username: user);
             return token;
         }
         [HttpGet("[action]")]
@@ -36,7 +36,12 @@ namespace PowerBIEmbedded.Controllers
             Report[] data = await tokenBuilder.getReportList();
             return data;
         }
-
+        [HttpGet("[action]")]
+        public async Task<TokenInfo> GetReportToken(string id = "", string mode = "", string user = "")
+        {
+            TokenInfo token = await tokenBuilder.getReportToken(id, mode, user);
+            return token;
+        }
     }
 
     public struct TokenInfo
@@ -54,7 +59,8 @@ namespace PowerBIEmbedded.Controllers
     }
     public class PowerBIToken
     {
-        private readonly string Username, Password, AuthorityUrl, ResourceUrl, ClientId, ApiUrl, GroupId, ReportId;
+        private readonly string Username, Password, AuthorityUrl, ResourceUrl, ClientId, ApiUrl, GroupId;
+        private string ReportId;
         public IConfiguration Configuration { get; set; }
 
         public PowerBIToken(IConfiguration config)
@@ -131,8 +137,12 @@ namespace PowerBIEmbedded.Controllers
                 return reportArr;
             }
         }
-        public async Task<TokenInfo> generateToken(string mode = "", string username = "", string roles = "")
+        public async Task<TokenInfo> getReportToken(string reportId = "", string mode = "", string username = "", string roles = "")
         {
+            if (!string.IsNullOrEmpty(reportId))
+            {
+                ReportId = reportId;
+            }
             string accessLevel;
             switch (mode.ToUpper())
             {
