@@ -13,13 +13,17 @@ interface Report {
     embedUrl: string,
     datasetId: string
 }
+enum ReportActions {
+    View,
+    Edit
+}
 
 export class ReportPicker extends React.Component<RouteComponentProps<{}>, ReportPickerState> {
     constructor(props: any) {
         super(props);
         this.state = {reports: undefined, loading: true};
         this.updateData();
-        this.handleEdit = this.handleEdit.bind(this);
+        this.handleReportAction = this.handleReportAction.bind(this);
     }
     private updateData() {
         let url = 'api/PowerBI/GetReportList';
@@ -36,19 +40,38 @@ export class ReportPicker extends React.Component<RouteComponentProps<{}>, Repor
             : this.renderContainer();
         return contents;
     }
-    private handleEdit(reportId: String) {
+    private handleReportAction(reportId: String, action: ReportActions) {
         console.log(reportId);
     }
     private renderContainer() {
         if (!this.state.reports) return;
         const ReportLine = (report: Report, onclick: Function) => (
-                <a className="list-group-item" key={report.id}>{report.name} <a onClick={() => onclick(report.id)} className="pull-right"><span className="glyphicon glyphicon-pencil"></span></a></a>
-            )
+                <tr className="" key={report.id}>
+                    <td>
+                        {report.name}
+                        <div className="btn-group-sm pull-right" role="group">
+                            <button type="button" className=" btn btn-sm btn-default" onClick={() => onclick(report.id, ReportActions.View)}>
+                                <span className="glyphicon glyphicon glyphicon-eye-open"></span>
+                            </button>
+                            <button type="button" className="btn btn-sm btn-default" onClick={() => onclick(report.id, ReportActions.Edit)}>
+                                <span className="glyphicon glyphicon-pencil"></span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+        )
         return (
             <div className=" col-md-6">
-                <div className="list-group">
-                    {this.state.reports.map(report => ReportLine(report, this.handleEdit))}
-                </div>
+                <table className="table table-hover table-sm">
+                <thead>
+                    <tr>
+                        <th>Lista de reports</th>
+                    </tr>
+                </thead>
+                    <tbody>
+                        {this.state.reports.map(report => ReportLine(report, this.handleReportAction))}
+                    </tbody>
+                </table>
             </div>
         )
     }
