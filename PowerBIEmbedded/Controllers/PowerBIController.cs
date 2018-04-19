@@ -97,11 +97,11 @@ namespace PowerBIEmbedded.Controllers
             public string TokenType { get; set; }
             [JsonProperty("scope")]
             public string Scope { get; set; }
-            [JsonProperty("experies_in")]
+            [JsonProperty("expires_in")]
             public int ExpiresIn { get; set; }
-            [JsonProperty("ext_experies_in")]
+            [JsonProperty("ext_expires_in")]
             public int ExtExpiresIn { get; set; }
-            [JsonProperty("experies_on")]
+            [JsonProperty("expires_on")]
             public int ExpiresOn { get; set; }
             [JsonProperty("not_before")]
             public int NotBefore { get; set; }
