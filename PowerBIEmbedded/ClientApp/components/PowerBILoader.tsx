@@ -7,13 +7,20 @@ interface PowerBILoaderState {
     tokenInfo?: TokenInfo,
     loading: boolean,
     user: string,
-    mode: string
+    mode: string,
+    reportId?: string
+}
+interface PowerBILoaderProps {
+    user?: string,
+    mode?: string,
+    reportId?: string,
 }
 
-export class PowerBILoader extends React.Component<RouteComponentProps<{}>, PowerBILoaderState> {
-    constructor(props: any) {
+export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILoaderState> {
+    constructor(props: PowerBILoaderProps) {
         super(props);
-        this.state = {tokenInfo: undefined, loading: true, user: '', mode: 'Create'};
+        this.state = {tokenInfo: undefined, loading: true, user: props.user? props.user : '', mode: props.mode? props.mode : 'Create'};
+        if (props.reportId) this.setState({reportId: props.reportId});
         this.updateData();
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
@@ -21,7 +28,8 @@ export class PowerBILoader extends React.Component<RouteComponentProps<{}>, Powe
     private updateData() {
         const mode = this.state.mode;
         const user = this.state.user;
-        let url = `api/PowerBI/GetToken\?mode=${mode}${user ? `&user=${user}` : ''}`;
+        const id = this.state.reportId;
+        let url = `api/PowerBI/GetReportToken\?mode=${mode}${user ? `&user=${user}` : ''}${id ? `&id=${id}` : ''}`;
         fetch(url)
             .then(response => response.json() as Promise<TokenInfo>)
             .then(data => {
