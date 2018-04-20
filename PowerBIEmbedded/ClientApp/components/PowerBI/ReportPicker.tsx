@@ -1,10 +1,14 @@
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import * as pbimodels from "powerbi-models";
+import {TokenInfo} from '../PowerBIReport';
+import {PowerBILoader} from '../PowerBILoader';
 
 interface ReportPickerState {
     reports?: Report[],
-    loading: boolean
+    loading: boolean,
+    selectedReport?: string,
+    selectedMode?: ReportActions
 }
 interface Report {
     id: string,
@@ -14,8 +18,8 @@ interface Report {
     datasetId: string
 }
 enum ReportActions {
-    View,
-    Edit
+    View = 'View',
+    Edit = 'Edit'
 }
 
 export class ReportPicker extends React.Component<RouteComponentProps<{}>, ReportPickerState> {
@@ -40,13 +44,13 @@ export class ReportPicker extends React.Component<RouteComponentProps<{}>, Repor
             : this.renderContainer();
         return contents;
     }
-    private handleReportAction(reportId: String, action: ReportActions) {
-        console.log(reportId);
+    private handleReportAction(reportId: string, action: ReportActions) {
+        this.setState({selectedReport: reportId,selectedMode: action});
     }
     private renderContainer() {
         if (!this.state.reports) return;
-        const ReportLine = (report: Report, onclick: Function) => (
-                <tr className="" key={report.id}>
+        const ReportLine = (report: Report, onclick: Function, selectedReport: Function ) => (
+                <tr className={report.id == selectedReport()? 'table-active': 'table'} key={report.id}>
                     <td>
                         {report.name}
                         <div className="btn-group-sm pull-right" role="group">
@@ -61,7 +65,7 @@ export class ReportPicker extends React.Component<RouteComponentProps<{}>, Repor
                 </tr>
         )
         return (
-            <div className=" col-md-6">
+            <div className="">
                 <table className="table table-hover table-sm">
                 <thead>
                     <tr>
@@ -69,9 +73,10 @@ export class ReportPicker extends React.Component<RouteComponentProps<{}>, Repor
                     </tr>
                 </thead>
                     <tbody>
-                        {this.state.reports.map(report => ReportLine(report, this.handleReportAction))}
+                        {this.state.reports.map(report => ReportLine(report, this.handleReportAction, () => this.state.selectedReport))}
                     </tbody>
                 </table>
+                {this.state.selectedReport && <PowerBILoader reportId={this.state.selectedReport} mode={this.state.selectedMode}/>}
             </div>
         )
     }
