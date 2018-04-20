@@ -8,7 +8,6 @@ interface PowerBILoaderState {
     loading: boolean,
     user: string,
     mode: string,
-    reportId?: string
 }
 interface PowerBILoaderProps {
     user?: string,
@@ -20,7 +19,6 @@ export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILo
     constructor(props: PowerBILoaderProps) {
         super(props);
         this.state = {tokenInfo: undefined, loading: true, user: props.user? props.user : '', mode: props.mode? props.mode : 'Create'};
-        if (props.reportId) this.setState({reportId: props.reportId});
         this.updateData();
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
@@ -28,7 +26,7 @@ export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILo
     private updateData() {
         const mode = this.state.mode;
         const user = this.state.user;
-        const id = this.state.reportId;
+        const id = this.props.reportId;
         let url = `api/PowerBI/GetReportToken\?mode=${mode}${user ? `&user=${user}` : ''}${id ? `&id=${id}` : ''}`;
         fetch(url)
             .then(response => response.json() as Promise<TokenInfo>)
@@ -76,5 +74,8 @@ export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILo
                 <PowerBIReport {...this.state.tokenInfo}/>
             </div>
         )
+    }
+    public componentDidUpdate(prevProps: PowerBILoaderProps, prevState: PowerBILoaderState) {
+        if (prevProps != this.props) this.updateData();
     }
 }
