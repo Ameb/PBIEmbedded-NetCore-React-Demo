@@ -48,17 +48,6 @@ export class PowerBILoader extends React.Component<RouteComponentProps<{}>, Powe
     }
     private renderContainer() {
         if (!this.state.tokenInfo) return;
-        let reportProps: TokenInfo = {...this.state.tokenInfo};
-        if (this.state.mode == "Create") {
-            delete(reportProps.reportId);
-            delete(reportProps.id);
-        } else {
-            reportProps.permissions = pbimodels.Permissions.All;
-        }
-        reportProps.tokenType = pbimodels.TokenType.Embed;
-        reportProps.type = 'report';
-        //delete(reportProps.mode);
-
         return (
             <div>
                 <form onSubmit = {this.handleSubmit}>
@@ -76,7 +65,7 @@ export class PowerBILoader extends React.Component<RouteComponentProps<{}>, Powe
                     }
                     <button type="submit">OK</button>
                 </form>
-                <PowerBIReport {...reportProps}/>
+                <PowerBIReport {...this.state.tokenInfo}/>
             </div>
         )
     }

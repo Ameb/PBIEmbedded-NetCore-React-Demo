@@ -1,5 +1,6 @@
 ﻿import * as React from 'react';
 import * as pbi from 'powerbi-client';
+import * as pbimodels from "powerbi-models";
 
 export interface TokenInfo extends pbi.IEmbedConfiguration {
     reportId?: string,
@@ -29,13 +30,16 @@ export class PowerBIReport extends React.Component<TokenInfo, {}> {
         )
     }
     private embed() {
+        let reportProps: TokenInfo = {...this.props} as TokenInfo;
+        reportProps.tokenType = pbimodels.TokenType.Embed;
+        reportProps.type = 'report';
         if (this.props.mode == "Create") {
-            // We need to clone the props object because createReport modifies it and doesn't work with this.props
-            var createProps : TokenInfo;
-            let {...createProps} = this.props;
-            this.report = this.powerbi.createReport(this.ref, createProps) as pbi.Report;
+            delete(reportProps.reportId);
+            delete(reportProps.id);
+            this.report = this.powerbi.createReport(this.ref, reportProps) as pbi.Report;
         } else {
-            this.report = new pbi.Report(this.powerbi, this.ref, this.props);
+            reportProps.permissions = pbimodels.Permissions.All;
+            this.report = new pbi.Report(this.powerbi, this.ref, reportProps);
         }
     }
     componentDidMount() {
