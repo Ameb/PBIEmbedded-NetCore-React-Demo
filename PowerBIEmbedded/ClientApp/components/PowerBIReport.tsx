@@ -9,16 +9,17 @@ export interface TokenInfo extends pbi.IEmbedConfiguration {
 
 export class PowerBIReport extends React.Component<TokenInfo, {}> {
     private powerbi: pbi.service.Service;
-    private ref: HTMLDivElement;
-    private report : pbi.Report;
+    private ref: React.RefObject<HTMLDivElement>;
+    private report? : pbi.Report;
     constructor(props: TokenInfo) {
         super(props);
         this.powerbi = new pbi.service.Service(pbi.factories.hpmFactory, pbi.factories.wpmpFactory, pbi.factories.routerFactory);
+        this.ref = React.createRef();
     }
     public render() {
         return (
             <div>
-                <div className="embedContainer" ref={(div) => { if (div) {this.ref = div; }}}></div>
+                <div className="embedContainer" ref={this.ref}></div>
                 <div>
                 Token: <pre>{this.props.accessToken}</pre>
                 Url: <pre>{this.props.embedUrl}</pre>
@@ -30,16 +31,17 @@ export class PowerBIReport extends React.Component<TokenInfo, {}> {
         )
     }
     private embed() {
+        if (!this.ref.current) return;
         let reportProps: TokenInfo = {...this.props} as TokenInfo;
         reportProps.tokenType = pbimodels.TokenType.Embed;
         reportProps.type = 'report';
         if (this.props.mode == "Create") {
             delete(reportProps.reportId);
             delete(reportProps.id);
-            this.report = this.powerbi.createReport(this.ref, reportProps) as pbi.Report;
+            this.report = this.powerbi.createReport(this.ref.current, reportProps) as pbi.Report;
         } else {
             reportProps.permissions = pbimodels.Permissions.All;
-            this.report = new pbi.Report(this.powerbi, this.ref, reportProps);
+            this.report = new pbi.Report(this.powerbi, this.ref.current, reportProps);
         }
     }
     componentDidMount() {
@@ -49,7 +51,7 @@ export class PowerBIReport extends React.Component<TokenInfo, {}> {
         if (this.props.accessToken != prevProps.accessToken)
             this.embed();
         // change from view to edit mode
-        if (this.props.viewMode && prevProps.viewMode != this.props.viewMode) {
+        if (this.report && this.props.viewMode && prevProps.viewMode != this.props.viewMode) {
                 this.report.switchMode(this.props.viewMode);
         }
     }
