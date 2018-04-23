@@ -10,15 +10,14 @@ interface PowerBILoaderState {
     mode: string,
 }
 interface PowerBILoaderProps {
-    user?: string,
     mode?: string,
-    reportId?: string,
+    reportId?: string
 }
 
 export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILoaderState> {
     constructor(props: PowerBILoaderProps) {
         super(props);
-        this.state = {tokenInfo: undefined, loading: true, user: props.user? props.user : '', mode: props.mode? props.mode : 'Create'};
+        this.state = {tokenInfo: undefined, loading: true, user: '', mode: props.mode? props.mode : 'Create'};
         this.updateData();
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleSelectChange = this.handleSelectChange.bind(this);
@@ -76,6 +75,9 @@ export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILo
         )
     }
     public componentDidUpdate(prevProps: PowerBILoaderProps, prevState: PowerBILoaderState) {
-        if (prevProps != this.props) this.updateData();
+        if (prevProps != this.props) {
+            if (this.props.mode) this.setState({mode: this.props.mode, user: ''}, () => this.updateData())
+            else this.updateData();
+        }
     }
 }
