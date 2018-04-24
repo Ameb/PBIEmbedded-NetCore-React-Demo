@@ -151,6 +151,8 @@ namespace PowerBIEmbedded.Controllers
                     break;
                 case "CREATE":
                     accessLevel = TokenAccessLevel.Create;
+                    // hardcode reportId for plantilla
+                    ReportId = "d346d02f-2a7d-4f4c-9437-407bf3c9bfb5";
                     break;
                 default:
                     accessLevel = TokenAccessLevel.View;
@@ -189,51 +191,50 @@ namespace PowerBIEmbedded.Controllers
                 EmbedToken tokenResponse;
                 if (accessLevel == TokenAccessLevel.Create)
                 {
-                    generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel, datasetId: report.DatasetId, allowSaveAs: true);
-                    tokenResponse = await client.Reports.GenerateTokenForCreateAsync(groupId: GroupId, requestParameters: generateTokenRequestParameters);
+                    // Duplicate Report
+                    CloneReportRequest crr = new CloneReportRequest(name: "prueba");
+                    report = client.Reports.CloneReportInGroup(GroupId, report.Id, crr);
+                    accessLevel = TokenAccessLevel.Edit;
+                }
+                var datasets = await client.Datasets.GetDatasetByIdInGroupAsync(GroupId, report.DatasetId);
+                //result.IsEffectiveIdentityRequired = datasets.IsEffectiveIdentityRequired;
+                //result.IsEffectiveIdentityRolesRequired = datasets.IsEffectiveIdentityRolesRequired;
+                // This is how you create embed token with effective identities
+                if (!string.IsNullOrEmpty(username))
+                {
+                    var rls = new EffectiveIdentity(username, new List<string> { report.DatasetId });
+                    if (!string.IsNullOrWhiteSpace(roles))
+                    {
+                        var rolesList = new List<string>();
+                        rolesList.AddRange(roles.Split(','));
+                        rls.Roles = rolesList;
+                    }
+                    // Generate Embed Token with effective identities.
+                    generateTokenRequestParameters = new GenerateTokenRequest
+                        (
+                        accessLevel: accessLevel,
+                        identities: new List<EffectiveIdentity> { rls }
+                        );
                 }
                 else
                 {
-                    var datasets = await client.Datasets.GetDatasetByIdInGroupAsync(GroupId, report.DatasetId);
-                    //result.IsEffectiveIdentityRequired = datasets.IsEffectiveIdentityRequired;
-                    //result.IsEffectiveIdentityRolesRequired = datasets.IsEffectiveIdentityRolesRequired;
-                    // This is how you create embed token with effective identities
-                    if (!string.IsNullOrEmpty(username))
+                    if (string.IsNullOrWhiteSpace(roles))
                     {
-                        var rls = new EffectiveIdentity(username, new List<string> { report.DatasetId });
+                        generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel);
+                    }
+                    else
+                    {
+                        var rls = new EffectiveIdentity { Datasets = new List<string> { report.DatasetId }, Username = "" };
                         if (!string.IsNullOrWhiteSpace(roles))
                         {
                             var rolesList = new List<string>();
                             rolesList.AddRange(roles.Split(','));
                             rls.Roles = rolesList;
                         }
-                        // Generate Embed Token with effective identities.
-                        generateTokenRequestParameters = new GenerateTokenRequest
-                            (
-                            accessLevel: accessLevel,
-                            identities: new List<EffectiveIdentity> { rls }
-                            );
+                        generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel, datasetId: report.DatasetId, identities: new List<EffectiveIdentity> { rls });
                     }
-                    else
-                    {
-                        if (string.IsNullOrWhiteSpace(roles))
-                        {
-                            generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel);
-                        }
-                        else
-                        {
-                            var rls = new EffectiveIdentity { Datasets = new List<string> { report.DatasetId }, Username = "" };
-                            if (!string.IsNullOrWhiteSpace(roles))
-                            {
-                                var rolesList = new List<string>();
-                                rolesList.AddRange(roles.Split(','));
-                                rls.Roles = rolesList;
-                            }
-                            generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel, datasetId: report.DatasetId, identities: new List<EffectiveIdentity> { rls });
-                        }
-                    }
-                    tokenResponse = await client.Reports.GenerateTokenInGroupAsync(GroupId, report.Id, generateTokenRequestParameters);
                 }
+                tokenResponse = await client.Reports.GenerateTokenInGroupAsync(GroupId, report.Id, generateTokenRequestParameters);
                 if (tokenResponse == null)
                 {
                     throw new System.Exception("Failed to generate embed token.");
