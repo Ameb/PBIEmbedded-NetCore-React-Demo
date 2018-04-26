@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,21 +26,22 @@ namespace PowerBIEmbedded.Controllers
             tokenBuilder = new PowerBIToken(Configuration);
         }
         [HttpGet("[action]")]
+        // Old Version uses this task
         public async Task<TokenInfo> GetToken(string mode = "", string user = "")
         {
             TokenInfo token = await tokenBuilder.getReportToken(mode: mode, username: user);
             return token;
         }
         [HttpGet("[action]")]
-        public async Task<Report[]> GetReportList()
+        public async Task<Report[]> GetReportList(string masterUser = "")
         {
-            Report[] data = await tokenBuilder.getReportList();
+            Report[] data = await tokenBuilder.getReportList(masterUser);
             return data;
         }
         [HttpGet("[action]")]
-        public async Task<TokenInfo> GetReportToken(string id = "", string mode = "", string user = "")
+        public async Task<TokenInfo> GetReportToken(string id = "", string mode = "", string user = "", string masterUser = "")
         {
-            TokenInfo token = await tokenBuilder.getReportToken(id, mode, user);
+            TokenInfo token = await tokenBuilder.getReportToken(id, mode, user, masterUser: masterUser);
             return token;
         }
     }
@@ -60,6 +62,7 @@ namespace PowerBIEmbedded.Controllers
     public class PowerBIToken
     {
         private readonly string Username, Password, AuthorityUrl, ResourceUrl, ClientId, ApiUrl, GroupId;
+        private readonly string JMOUsername, MasterUsername, JMOPassword, MasterPassword;
         private string ReportId;
         public IConfiguration Configuration { get; set; }
 
@@ -73,12 +76,32 @@ namespace PowerBIEmbedded.Controllers
             ApiUrl = config["apiUrl"];
             GroupId = config["groupId"];
             ReportId = config["reportId"];
+            MasterUsername = config["masterUsername"];
+            MasterPassword = config["masterPassword"];
+            JMOUsername = config["auxUsername"];
+            JMOPassword = config["auxPassword"];
         }
         /*
             Identificate into PowerBI api using OAuth.
         */
-        private async Task<OAuthResult> AuthenticateAsync()
+        private async Task<OAuthResult> AuthenticateAsync(string masterUser = "")
         {
+            string username, password;
+            switch (masterUser.ToUpper())
+            {
+                case "MASTER":
+                    username = MasterUsername;
+                    password = Encoding.UTF8.GetString(Convert.FromBase64String(MasterPassword));
+                    break;
+                case "JMO":
+                    username = JMOUsername;
+                    password = Encoding.UTF8.GetString(Convert.FromBase64String(JMOPassword));
+                    break;
+                default:
+                    username = Username;
+                    password = Encoding.UTF8.GetString(Convert.FromBase64String(Password));
+                    break;
+            }
             var oauthEndpoint = new Uri(AuthorityUrl);
 
             using (var client = new HttpClient())
@@ -88,8 +111,8 @@ namespace PowerBIEmbedded.Controllers
                     new KeyValuePair<string, string>("resource", ResourceUrl),
                     new KeyValuePair<string, string>("client_id", ClientId),
                     new KeyValuePair<string, string>("grant_type", "password"),
-                    new KeyValuePair<string, string>("username", Username),
-                    new KeyValuePair<string, string>("password", Password),
+                    new KeyValuePair<string, string>("username", username),
+                    new KeyValuePair<string, string>("password", password),
                     new KeyValuePair<string, string>("scope", "openid"),
                 }));
 
@@ -118,9 +141,9 @@ namespace PowerBIEmbedded.Controllers
             [JsonProperty("refresh_token")]
             public string RefreshToken { get; set; }
         }
-        public async Task<Report[]> getReportList()
+        public async Task<Report[]> getReportList(string masterUser = "")
         {
-            var authenticationResult = await AuthenticateAsync();
+            var authenticationResult = await AuthenticateAsync(masterUser);
             if (authenticationResult == null)
             {
                 throw new System.Exception();
@@ -137,7 +160,7 @@ namespace PowerBIEmbedded.Controllers
                 return reportArr;
             }
         }
-        public async Task<TokenInfo> getReportToken(string reportId = "", string mode = "", string username = "", string roles = "")
+        public async Task<TokenInfo> getReportToken(string reportId = "", string mode = "", string username = "", string roles = "", string masterUser = "")
         {
             if (!string.IsNullOrEmpty(reportId))
             {
@@ -158,7 +181,7 @@ namespace PowerBIEmbedded.Controllers
                     accessLevel = TokenAccessLevel.View;
                     break;
             }
-            var authenticationResult = await AuthenticateAsync();
+            var authenticationResult = await AuthenticateAsync(masterUser);
             if (authenticationResult == null)
             {
                 throw new System.Exception();
