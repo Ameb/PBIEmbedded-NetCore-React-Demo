@@ -48,7 +48,6 @@ export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILo
         this.setState({[name as any]: value});
       }
     public render() {
-        console.log(this.state);
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
             : this.renderContainer();
@@ -64,13 +63,11 @@ export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILo
                         <option value="Edit">Edit</option>
                         <option value="Create">Create</option>
                     </select>
-                    { this.state.mode != "Create" &&
                     <select name="user" value={this.state.user} onChange={this.handleSelectChange}>
                         <option value="">no RLS</option>
                         <option value="bitest1">bitest1</option>
                         <option value="bitest2">bitest2</option>
                     </select>
-                    }
                     <button type="submit">OK</button>
                 </form>
                 <PowerBIReport {...this.state.tokenInfo}/>

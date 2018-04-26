@@ -43,7 +43,6 @@ export class ReportPicker extends React.Component<ReportPickerProps, ReportPicke
             });
     }
     public render() {
-        console.log(this.state);
         let contents = this.state.loading
             ? <p><em>Loading...</em></p>
             : this.renderContainer();
