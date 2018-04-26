@@ -34,12 +34,22 @@ export class NavMenu extends React.Component<{}, {}> {
                         </li>
                         <li>
                             <NavLink to={'/powerBI'} activeClassName='active'>
-                                <span className='glyphicon glyphicon-equalizer'></span> Power BI
+                                <span className='glyphicon glyphicon-equalizer'></span> Power BI (Old)
                             </NavLink>
                         </li>
                         <li>
                             <NavLink to={'/powerBINew'} activeClassName='active'>
-                                <span className='glyphicon glyphicon-equalizer'></span> Power BI (Nuevo)
+                                <span className='glyphicon glyphicon-equalizer'></span> Power BI (ibr)
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to={'/powerBINew2'} activeClassName='active'>
+                                <span className='glyphicon glyphicon-equalizer'></span> Power BI (master)
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to={'/powerBIJMO'} activeClassName='active'>
+                                <span className='glyphicon glyphicon-equalizer'></span> Power BI (jmo)
                             </NavLink>
                         </li>
                     </ul>
