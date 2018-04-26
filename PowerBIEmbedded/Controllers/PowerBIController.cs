@@ -160,7 +160,7 @@ namespace PowerBIEmbedded.Controllers
                 return reportArr;
             }
         }
-        public async Task<TokenInfo> getReportToken(string reportId = "", string mode = "", string username = "", string roles = "", string masterUser = "")
+        public async Task<TokenInfo> getReportToken(string reportId = "", string mode = "", string username = "", string masterUser = "")
         {
             if (!string.IsNullOrEmpty(reportId))
             {
@@ -173,9 +173,11 @@ namespace PowerBIEmbedded.Controllers
                     accessLevel = TokenAccessLevel.Edit;
                     break;
                 case "CREATE":
+                    if (!string.IsNullOrEmpty(username)) {
+                        // for RLS we will duplicate the empty template report
+                        ReportId = "d346d02f-2a7d-4f4c-9437-407bf3c9bfb5";
+                    }
                     accessLevel = TokenAccessLevel.Create;
-                    // hardcode reportId for plantilla
-                    ReportId = "d346d02f-2a7d-4f4c-9437-407bf3c9bfb5";
                     break;
                 default:
                     accessLevel = TokenAccessLevel.View;
@@ -214,55 +216,47 @@ namespace PowerBIEmbedded.Controllers
                 EmbedToken tokenResponse;
                 if (accessLevel == TokenAccessLevel.Create)
                 {
-                    // Duplicate Report
-                    CloneReportRequest crr = new CloneReportRequest(name: "prueba");
-                    report = client.Reports.CloneReportInGroup(GroupId, report.Id, crr);
-                    accessLevel = TokenAccessLevel.Edit;
-                }
-                var datasets = await client.Datasets.GetDatasetByIdInGroupAsync(GroupId, report.DatasetId);
-                //result.IsEffectiveIdentityRequired = datasets.IsEffectiveIdentityRequired;
-                //result.IsEffectiveIdentityRolesRequired = datasets.IsEffectiveIdentityRolesRequired;
-                // This is how you create embed token with effective identities
-                if (!string.IsNullOrEmpty(username))
-                {
-                    var rls = new EffectiveIdentity(username, new List<string> { report.DatasetId });
-                    if (!string.IsNullOrWhiteSpace(roles))
-                    {
-                        var rolesList = new List<string>();
-                        rolesList.AddRange(roles.Split(','));
-                        rls.Roles = rolesList;
-                    }
-                    // Generate Embed Token with effective identities.
-                    generateTokenRequestParameters = new GenerateTokenRequest
+                    if (!string.IsNullOrEmpty(username)) {
+                        // Duplicate Report
+                        CloneReportRequest crr = new CloneReportRequest(name: "prueba");
+                        report = client.Reports.CloneReportInGroup(GroupId, report.Id, crr);
+                        // apply rls
+                        var rls = new EffectiveIdentity(username, new List<string> { report.DatasetId });
+                        generateTokenRequestParameters = new GenerateTokenRequest
                         (
-                        accessLevel: accessLevel,
-                        identities: new List<EffectiveIdentity> { rls }
+                            accessLevel: TokenAccessLevel.Edit,
+                            datasetId: report.DatasetId,
+                            allowSaveAs: false,
+                            identities: new List<EffectiveIdentity> { rls }
                         );
+                    } else {
+                        generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel, datasetId: report.DatasetId, allowSaveAs: true);
+                    }
+                    tokenResponse = await client.Reports.GenerateTokenForCreateAsync(groupId: GroupId, requestParameters: generateTokenRequestParameters);
                 }
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(roles))
-                    {
-                        generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel);
+                    // Generate Token Request Parameters
+                    if (!string.IsNullOrEmpty(username)) {
+                        var rls = new EffectiveIdentity(username, new List<string> { report.DatasetId });
+                        generateTokenRequestParameters = new GenerateTokenRequest
+                        (
+                            accessLevel: accessLevel,
+                            datasetId: report.DatasetId,
+                            allowSaveAs: false,
+                            identities: new List<EffectiveIdentity> { rls }
+                        );
                     }
                     else
                     {
-                        var rls = new EffectiveIdentity { Datasets = new List<string> { report.DatasetId }, Username = "" };
-                        if (!string.IsNullOrWhiteSpace(roles))
-                        {
-                            var rolesList = new List<string>();
-                            rolesList.AddRange(roles.Split(','));
-                            rls.Roles = rolesList;
-                        }
-                        generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel, datasetId: report.DatasetId, identities: new List<EffectiveIdentity> { rls });
+                        generateTokenRequestParameters = new GenerateTokenRequest(accessLevel: accessLevel);
                     }
+                    tokenResponse = await client.Reports.GenerateTokenInGroupAsync(GroupId, report.Id, generateTokenRequestParameters);
                 }
-                tokenResponse = await client.Reports.GenerateTokenInGroupAsync(GroupId, report.Id, generateTokenRequestParameters);
                 if (tokenResponse == null)
                 {
                     throw new System.Exception("Failed to generate embed token.");
                 }
-
                 // Generate Embed Configuration.
                 return new TokenInfo
                 {
