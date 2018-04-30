@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,7 @@ using Microsoft.PowerBI.Api.V2;
 using Microsoft.PowerBI.Api.V2.Models;
 using Microsoft.Rest;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace PowerBIEmbedded.Controllers
 {
@@ -20,10 +21,14 @@ namespace PowerBIEmbedded.Controllers
     {
         private PowerBIToken tokenBuilder;
         public IConfiguration Configuration { get; set; }
+        private readonly string WebId, Resource, AuthorizeUrl;
         public PowerBIController(IConfiguration config)
         {
             Configuration = config;
             tokenBuilder = new PowerBIToken(Configuration);
+            WebId = config["webId"];
+            Resource = config["resourceUrl"];
+            AuthorizeUrl = config["authorityAuthorizeUrl"];
         }
         [HttpGet("[action]")]
         // Old Version uses this task
@@ -43,6 +48,38 @@ namespace PowerBIEmbedded.Controllers
         {
             TokenInfo token = await tokenBuilder.getReportToken(id, mode, user, masterUser: masterUser);
             return token;
+        }
+        [HttpGet("[action]")]
+        public RedirectResult ADToken()
+        {
+            Dictionary<string, string> queryParamsOut;
+            //.Parameters.Get("code");
+            // Use AD
+            string code = Request.Query["code"].ToString();
+            if (!String.IsNullOrEmpty(code)) {
+                // AD Returns. Pass code to frontend
+                queryParamsOut = new Dictionary<string, string>()
+                    {
+                        {"code", code}
+                    };
+                string query = QueryHelpers.AddQueryString("http://na-port149:5050/AD", queryParamsOut);
+                return Redirect(query);
+            }
+            else
+            {
+                queryParamsOut = new Dictionary<string, string>()
+                    {
+                        {"response_type", "code"},
+                        {"client_id",WebId},
+                        {"resource", Resource},
+                        {"redirect_uri", "http://na-port149:5050/api/PowerBI/ADToken/"}
+                    };
+                string query = QueryHelpers.AddQueryString(AuthorizeUrl, queryParamsOut);
+                return Redirect(query);
+            }
+            //TokenInfo token = await tokenBuilder.testADAL();
+            //Redirect();
+            //return token;
         }
     }
 
@@ -70,7 +107,7 @@ namespace PowerBIEmbedded.Controllers
         {
             Username = config["pbiUsername"];
             Password = config["pbiPassword"];
-            AuthorityUrl = config["authorityUrl"];
+            AuthorityUrl = config["authorityTokenUrl"];
             ResourceUrl = config["resourceUrl"];
             ClientId = config["clientId"];
             ApiUrl = config["apiUrl"];
