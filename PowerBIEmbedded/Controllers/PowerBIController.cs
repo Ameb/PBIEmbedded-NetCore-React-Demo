@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,7 @@ using Microsoft.PowerBI.Api.V2;
 using Microsoft.PowerBI.Api.V2.Models;
 using Microsoft.Rest;
 using Newtonsoft.Json;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace PowerBIEmbedded.Controllers
@@ -40,13 +41,13 @@ namespace PowerBIEmbedded.Controllers
         [HttpGet("[action]")]
         public async Task<Report[]> GetReportList(string masterUser = null, string ADcode = null)
         {
-            Report[] data = await tokenBuilder.getReportList(masterUser);
+            Report[] data = await tokenBuilder.getReportList(masterUser, ADcode);
             return data;
         }
         [HttpGet("[action]")]
         public async Task<TokenInfo> GetReportToken(string id = null, string mode = null, string user = null, string masterUser = null, string ADcode = null)
         {
-            TokenInfo token = await tokenBuilder.getReportToken(id, mode, user, masterUser: masterUser);
+            TokenInfo token = await tokenBuilder.getReportToken(id, mode, user, masterUser: masterUser, ADcode: ADcode);
             return token;
         }
         [HttpGet("[action]")]
@@ -100,6 +101,7 @@ namespace PowerBIEmbedded.Controllers
     {
         private readonly string Username, Password, AuthorityUrl, ResourceUrl, ClientId, ApiUrl, GroupId;
         private readonly string JMOUsername, MasterUsername, JMOPassword, MasterPassword;
+        private readonly string WebId, WebSecret;
         private string ReportId;
         public IConfiguration Configuration { get; set; }
 
@@ -117,34 +119,46 @@ namespace PowerBIEmbedded.Controllers
             MasterPassword = config["masterPassword"];
             JMOUsername = config["auxUsername"];
             JMOPassword = config["auxPassword"];
+
+            WebId = config["webId"];
+            WebSecret = config["webSecret"];
         }
         /*
             Identificate into PowerBI api using OAuth.
         */
-        private async Task<OAuthResult> AuthenticateAsync(string masterUser = "")
+        private async Task<TokenCredentials> AuthenticateAsync(string masterUser = null, string ADcode = null)
         {
             string username, password;
+            if (!String.IsNullOrEmpty(ADcode))
+            {
+                TokenCache TC = new TokenCache();
+                AuthenticationContext AC = new AuthenticationContext(AuthorityUrl, TC);
+                ClientCredential cc = new ClientCredential(WebId, WebSecret);
+
+                AuthenticationResult ar = await AC.AcquireTokenByAuthorizationCodeAsync(ADcode, new Uri("http://na-port149:5050/api/PowerBI/ADToken/"),cc);
+                return new TokenCredentials(ar.AccessToken);
+            }
             if (String.IsNullOrEmpty(masterUser)) {
                 username = Username;
                 password = Encoding.UTF8.GetString(Convert.FromBase64String(Password));
             }
             else
             {
-            switch (masterUser.ToUpper())
-            {
-                case "MASTER":
-                    username = MasterUsername;
-                    password = Encoding.UTF8.GetString(Convert.FromBase64String(MasterPassword));
-                    break;
-                case "JMO":
-                    username = JMOUsername;
-                    password = Encoding.UTF8.GetString(Convert.FromBase64String(JMOPassword));
-                    break;
-                default:
-                    username = Username;
-                    password = Encoding.UTF8.GetString(Convert.FromBase64String(Password));
-                    break;
-            }
+                switch (masterUser.ToUpper())
+                {
+                    case "MASTER":
+                        username = MasterUsername;
+                        password = Encoding.UTF8.GetString(Convert.FromBase64String(MasterPassword));
+                        break;
+                    case "JMO":
+                        username = JMOUsername;
+                        password = Encoding.UTF8.GetString(Convert.FromBase64String(JMOPassword));
+                        break;
+                    default:
+                        username = Username;
+                        password = Encoding.UTF8.GetString(Convert.FromBase64String(Password));
+                        break;
+                }
             }
             var oauthEndpoint = new Uri(AuthorityUrl);
 
@@ -161,7 +175,9 @@ namespace PowerBIEmbedded.Controllers
                 }));
 
                 var content = await result.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<OAuthResult>(content);
+                var oar = JsonConvert.DeserializeObject<OAuthResult>(content);
+                // Bearer token is the default
+                return new TokenCredentials(oar.AccessToken);
             }
         }
         class OAuthResult
@@ -185,15 +201,9 @@ namespace PowerBIEmbedded.Controllers
             [JsonProperty("refresh_token")]
             public string RefreshToken { get; set; }
         }
-        public async Task<Report[]> getReportList(string masterUser = "")
+        public async Task<Report[]> getReportList(string masterUser = "", string ADcode = null)
         {
-            var authenticationResult = await AuthenticateAsync(masterUser);
-            if (authenticationResult == null)
-            {
-                throw new System.Exception();
-            }
-
-            var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
+            var tokenCredentials = await AuthenticateAsync(masterUser, ADcode);
 
             // Create a Power BI Client object. It will be used to call Power BI APIs.
             using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
@@ -204,7 +214,7 @@ namespace PowerBIEmbedded.Controllers
                 return reportArr;
             }
         }
-        public async Task<TokenInfo> getReportToken(string reportId = "", string mode = "", string username = "", string masterUser = "")
+        public async Task<TokenInfo> getReportToken(string reportId = "", string mode = "", string username = "", string masterUser = "", string ADcode = null)
         {
             if (!string.IsNullOrEmpty(reportId))
             {
@@ -227,13 +237,7 @@ namespace PowerBIEmbedded.Controllers
                     accessLevel = TokenAccessLevel.View;
                     break;
             }
-            var authenticationResult = await AuthenticateAsync(masterUser);
-            if (authenticationResult == null)
-            {
-                throw new System.Exception();
-            }
-
-            var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
+            var tokenCredentials = await AuthenticateAsync(masterUser, ADcode);
 
             // Create a Power BI Client object. It will be used to call Power BI APIs.
             using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
