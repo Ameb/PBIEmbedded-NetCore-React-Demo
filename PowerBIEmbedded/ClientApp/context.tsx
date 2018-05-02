@@ -12,7 +12,7 @@ export const withContext = (UnwrappedComponent: React.ComponentType<any>) =>
       render() {
         return (
             <ContextCode.Consumer>
-                {({code, changeCode}) => <UnwrappedComponent {...this.props} code={code}/>}
+                {({code, changeCode}) => <UnwrappedComponent {...this.props} ADcode={code}/>}
             </ContextCode.Consumer>
         );
       }

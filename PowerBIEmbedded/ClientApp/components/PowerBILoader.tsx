@@ -2,6 +2,7 @@ import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import {PowerBIReport, TokenInfo} from './PowerBIReport';
 import * as pbimodels from "powerbi-models";
+import $ from 'jquery';
 
 interface PowerBILoaderState {
     tokenInfo?: TokenInfo,
@@ -13,7 +14,8 @@ interface PowerBILoaderProps {
     mode?: string,
     reportId?: string,
     user?: string,
-    masterUser?: string
+    masterUser?: string,
+    ADcode?: string,
 }
 
 export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILoaderState> {
@@ -29,7 +31,15 @@ export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILo
         const user = this.state.user;
         const masterUser = this.props.masterUser;
         const id = this.props.reportId;
-        let url = `api/PowerBI/GetReportToken\?mode=${mode}${user ? `&user=${user}` : ''}${id ? `&id=${id}` : ''}${masterUser ? `&masterUser=${masterUser}` : ''}`;
+        const ADcode = this.props.ADcode;
+        let params = {
+            mode: mode,
+            user: user,
+            id: id,
+            masterUser: masterUser,
+            ADcode: ADcode,
+        };
+        let url = `api/PowerBI/GetReportToken\?${$.param(params)}`;
         fetch(url)
             .then(response => response.json() as Promise<TokenInfo>)
             .then(data => {

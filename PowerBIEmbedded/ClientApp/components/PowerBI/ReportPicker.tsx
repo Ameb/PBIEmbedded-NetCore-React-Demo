@@ -3,10 +3,12 @@ import { RouteComponentProps } from 'react-router';
 import * as pbimodels from "powerbi-models";
 import {TokenInfo} from '../PowerBIReport';
 import {PowerBILoader} from '../PowerBILoader';
+import $ from 'jquery';
 
 
 interface ReportPickerProps {
-    masterUser?: string
+    masterUser?: string,
+    ADcode?: string,
 }
 
 interface ReportPickerState {
@@ -35,7 +37,11 @@ export class ReportPicker extends React.Component<ReportPickerProps, ReportPicke
         this.handleReportAction = this.handleReportAction.bind(this);
     }
     private updateData() {
-        let url = this.props.masterUser ? `api/PowerBI/GetReportList/?masterUser=${this.props.masterUser}` : 'api/PowerBI/GetReportList';
+        let params = {
+            masterUser: this.props.masterUser ? this.props.masterUser : '',
+            ADcode: this.props.ADcode ? this.props.ADcode : '',
+        };
+        let url = `api/PowerBI/GetReportList\?${$.param(params)}`;
         fetch(url)
             .then(response => response.json() as Promise<Report[]>)
             .then(data => {
@@ -80,7 +86,7 @@ export class ReportPicker extends React.Component<ReportPickerProps, ReportPicke
                         {this.state.reports.map(report => ReportLine(report, this.handleReportAction, () => this.state.selectedReport))}
                     </tbody>
                 </table>
-                {this.state.selectedReport && <PowerBILoader reportId={this.state.selectedReport} mode={this.state.selectedMode} masterUser={this.props.masterUser}/>}
+                {this.state.selectedReport && <PowerBILoader reportId={this.state.selectedReport} mode={this.state.selectedMode} masterUser={this.props.masterUser} ADcode={this.props.ADcode}/>}
             </div>
         )
     }
