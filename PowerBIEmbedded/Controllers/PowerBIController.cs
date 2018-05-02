@@ -32,19 +32,19 @@ namespace PowerBIEmbedded.Controllers
         }
         [HttpGet("[action]")]
         // Old Version uses this task
-        public async Task<TokenInfo> GetToken(string mode = "", string user = "")
+        public async Task<TokenInfo> GetToken(string mode = null, string user = null)
         {
             TokenInfo token = await tokenBuilder.getReportToken(mode: mode, username: user);
             return token;
         }
         [HttpGet("[action]")]
-        public async Task<Report[]> GetReportList(string masterUser = "")
+        public async Task<Report[]> GetReportList(string masterUser = null, string ADcode = null)
         {
             Report[] data = await tokenBuilder.getReportList(masterUser);
             return data;
         }
         [HttpGet("[action]")]
-        public async Task<TokenInfo> GetReportToken(string id = "", string mode = "", string user = "", string masterUser = "")
+        public async Task<TokenInfo> GetReportToken(string id = null, string mode = null, string user = null, string masterUser = null, string ADcode = null)
         {
             TokenInfo token = await tokenBuilder.getReportToken(id, mode, user, masterUser: masterUser);
             return token;
@@ -124,6 +124,12 @@ namespace PowerBIEmbedded.Controllers
         private async Task<OAuthResult> AuthenticateAsync(string masterUser = "")
         {
             string username, password;
+            if (String.IsNullOrEmpty(masterUser)) {
+                username = Username;
+                password = Encoding.UTF8.GetString(Convert.FromBase64String(Password));
+            }
+            else
+            {
             switch (masterUser.ToUpper())
             {
                 case "MASTER":
@@ -138,6 +144,7 @@ namespace PowerBIEmbedded.Controllers
                     username = Username;
                     password = Encoding.UTF8.GetString(Convert.FromBase64String(Password));
                     break;
+            }
             }
             var oauthEndpoint = new Uri(AuthorityUrl);
 
