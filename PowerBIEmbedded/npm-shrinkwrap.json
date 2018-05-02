@@ -10,6 +10,11 @@
       "integrity": "sha512-2A0stT6b61DANLErAfSkeQ77N+A3FbR7ardUJUP3xm9f4W8qtG9ispBYDUX42Fl1EbR0rqSV3IWjbB6ew7hXRw==",
       "dev": true
     },
+    "@types/jquery": {
+      "version": "3.3.1",
+      "resolved": "https://registry.npmjs.org/@types/jquery/-/jquery-3.3.1.tgz",
+      "integrity": "sha512-N3h+rzN518yl2xKrW0o6KKdNmWZ+OwG6SoM5TBEQFF0tTv5wXPEsoOuYQ2Kt3/89XbcSZUJLdjiT/2c3BR/ApQ=="
+    },
     "@types/node": {
       "version": "9.6.6",
       "resolved": "https://registry.npmjs.org/@types/node/-/node-9.6.6.tgz",
