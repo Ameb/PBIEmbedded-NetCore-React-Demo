@@ -4,7 +4,8 @@ import * as pbimodels from "powerbi-models";
 
 export interface TokenInfo extends pbi.IEmbedConfiguration {
     reportId?: string,
-    mode?: string
+    mode?: string,
+    name?: string,
 }
 
 export class PowerBIReport extends React.Component<TokenInfo, {}> {

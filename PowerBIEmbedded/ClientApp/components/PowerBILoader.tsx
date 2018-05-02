@@ -12,7 +12,7 @@ interface PowerBILoaderState {
 }
 interface PowerBILoaderProps {
     mode?: string,
-    reportId?: string,
+    report: TokenInfo,
     user?: string,
     masterUser?: string,
     ADcode?: string,
@@ -30,7 +30,7 @@ export class PowerBILoader extends React.Component<PowerBILoaderProps, PowerBILo
         const mode = this.state.mode;
         const user = this.state.user;
         const masterUser = this.props.masterUser;
-        const id = this.props.reportId;
+        const id = this.props.report? this.props.report.id: undefined;
         const ADcode = this.props.ADcode;
         let params = {
             mode: mode,
