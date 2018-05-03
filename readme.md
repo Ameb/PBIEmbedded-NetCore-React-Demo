@@ -2,6 +2,24 @@
 
 API ASP .Net Core + frontend React (Webpack), siguiendo la plantilla de aplicación .Net Core de Visual Studio.
 
+## Preparación
+
+### Azure
+
+Para que la aplicación funcione es necesario que los usuarios (o bien usuarios *master* o bien usuarios *pro*) concedan permisos. **Para los usuarios master es imprescindible [conceder los permisos](https://docs.microsoft.com/en-us/power-bi/developer/register-app#using-the-azure-ad-portal) desde el portal de Azure**. A los usuarios *pro* se les pregunta automáticamente al hacer login en `AD`.
+
+### PowerBI
+
+Para utilizar los servicios de PowerBI embedded es necesario cuentas pro. También es necesario contratar una capacidad para usar la API de generación de Tokens, ya que de forma gratuita está limitada (el límite es desconocido, pero en el desarrollo de la demo durante 15 días hemos llegado a consumir el 20%). Para poder embeder los usuarios deben ser administradores del workspace.
+
+#### Gateway
+
+Para poder pasar identidades al cubo los usuarios deben ser administradores del gateway.
+
+### Cubo
+
+El usuario que pase identidades debe tener algún rol efectivo en el cubo (Acceso a algun dato). Por tanto debe también ser usuario de dominio.
+
 ## Identificación y obtención de Tokens
 
 [authetication](https://docs.microsoft.com/en-us/power-bi/developer/get-azuread-access-token)
@@ -19,3 +37,9 @@ En caso de usar identificación por AAD los usuarios deben hacer login, y los pe
 ## Mostrar los informes
 
 La configuración que se le pasa al `embed()` en javascript es importante, ya que cualquier parámetro mal indicado da un error de identificación genérico (403).
+
+# Vocabulario
+
+- Usuario *pro*: Usuario con cuenta pro que se espera acceda directamente a la aplicación (user owns data).
+- Usuario *master*: Usuario con cuenta pro que la aplicación utiliza para operar con identidades (app owns data).
+- Identidades: Usuarios definidos en el cubo que pueden no existir en azure.
