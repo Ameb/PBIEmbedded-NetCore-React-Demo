@@ -63,7 +63,7 @@ namespace PowerBIEmbedded.Controllers
                     {
                         {"code", code}
                     };
-                string query = QueryHelpers.AddQueryString("http://na-port149:5050/AD", queryParamsOut);
+                string query = QueryHelpers.AddQueryString("http://localhost:5050/AD", queryParamsOut);
                 return Redirect(query);
             }
             else
@@ -73,7 +73,7 @@ namespace PowerBIEmbedded.Controllers
                         {"response_type", "code"},
                         {"client_id",WebId},
                         {"resource", Resource},
-                        {"redirect_uri", "http://na-port149:5050/api/PowerBI/ADToken/"}
+                        {"redirect_uri", "http://localhost:5050/api/PowerBI/ADToken/"}
                     };
                 string query = QueryHelpers.AddQueryString(AuthorizeUrl, queryParamsOut);
                 return Redirect(query);
@@ -137,7 +137,7 @@ namespace PowerBIEmbedded.Controllers
                 AuthenticationContext AC = new AuthenticationContext(AuthorityUrl, TC);
                 ClientCredential cc = new ClientCredential(WebId, WebSecret);
 
-                AuthenticationResult ar = await AC.AcquireTokenByAuthorizationCodeAsync(ADcode, new Uri("http://na-port149:5050/api/PowerBI/ADToken/"),cc);
+                AuthenticationResult ar = await AC.AcquireTokenByAuthorizationCodeAsync(ADcode, new Uri("http://localhost:5050/api/PowerBI/ADToken/"),cc);
                 return ar.AccessToken;
             }
             if (String.IsNullOrEmpty(masterUser)) {
@@ -231,7 +231,7 @@ namespace PowerBIEmbedded.Controllers
                 case "CREATE":
                     if (!string.IsNullOrEmpty(username)) {
                         // for RLS we will duplicate the empty template report
-                        ReportId = "d346d02f-2a7d-4f4c-9437-407bf3c9bfb5";
+                        // ReportId = "d346d02f-2a7d-4f4c-9437-407bf3c9bfb5";
                     }
                     accessLevel = TokenAccessLevel.Create;
                     break;

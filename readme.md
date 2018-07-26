@@ -1,3 +1,35 @@
+# This repo was uploaded by request and it is not a fully working example.
+
+## Some notes:
+- I ended running the project from vscode so it might not run on Visual Studio
+- Uses ConfigurationBuilder, here is an example `secrets.json` storing base64 encoded passwords, **which is not secure and should not be used**
+- We were testing multiple users, so there are credentials stored for 3 users
+
+```json
+{
+  "description": "This file stores secrets readed by ConfigurationBuilder",
+  "authorityTokenUrl": "https://login.windows.net/common/oauth2/token/",
+  "authorityAuthorizeUrl": "https://login.windows.net/common/oauth2/authorize/",
+  "resourceUrl": "https://analysis.windows.net/powerbi/api",
+  "apiUrl": "https://api.powerbi.com/",
+  "embedUrlBase": "https://app.powerbi.com/",
+  "clientId": "tenant",
+  "webSecret": "app secret",
+  "webId": "appId",
+  "groupId": "powerbi group Id",
+  "reportId": "no longer used",
+  "pbiUsername": "Username1",
+  "pbiPassword": "base64pwd",
+  "masterUsername": "Username2",
+  "masterPassword": "base64pwd",
+  "auxUsername": "Username3",
+  "auxPassword": "base64pwd"
+}
+```
+- I had to fiddle with some IIS configs to get it available on LAN, like having to hardcode the hostname in the url.
+
+# Spanish notes below
+
 # Demo PowerBI
 
 API ASP .Net Core + frontend React (Webpack), siguiendo la plantilla de aplicación .Net Core de Visual Studio.
