@@ -96,6 +96,8 @@ namespace PowerBIEmbedded.Controllers
         public string ReportId;
         [JsonProperty("mode")]
         public string mode;
+        [JsonProperty("tokenType")]
+        public string TokenType;
     }
     public class PowerBIToken
     {
@@ -126,7 +128,7 @@ namespace PowerBIEmbedded.Controllers
         /*
             Identificate into PowerBI api using OAuth.
         */
-        private async Task<TokenCredentials> AuthenticateAsync(string masterUser = null, string ADcode = null)
+        private async Task<string> AuthenticateAsync(string masterUser = null, string ADcode = null)
         {
             string username, password;
             if (!String.IsNullOrEmpty(ADcode))
@@ -136,7 +138,7 @@ namespace PowerBIEmbedded.Controllers
                 ClientCredential cc = new ClientCredential(WebId, WebSecret);
 
                 AuthenticationResult ar = await AC.AcquireTokenByAuthorizationCodeAsync(ADcode, new Uri("http://na-port149:5050/api/PowerBI/ADToken/"),cc);
-                return new TokenCredentials(ar.AccessToken);
+                return ar.AccessToken;
             }
             if (String.IsNullOrEmpty(masterUser)) {
                 username = Username;
@@ -177,7 +179,7 @@ namespace PowerBIEmbedded.Controllers
                 var content = await result.Content.ReadAsStringAsync();
                 var oar = JsonConvert.DeserializeObject<OAuthResult>(content);
                 // Bearer token is the default
-                return new TokenCredentials(oar.AccessToken);
+                return oar.AccessToken;
             }
         }
         class OAuthResult
@@ -203,10 +205,10 @@ namespace PowerBIEmbedded.Controllers
         }
         public async Task<Report[]> getReportList(string masterUser = "", string ADcode = null)
         {
-            var tokenCredentials = await AuthenticateAsync(masterUser, ADcode);
+            string bearerToken = await AuthenticateAsync(masterUser, ADcode);
 
             // Create a Power BI Client object. It will be used to call Power BI APIs.
-            using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
+            using (var client = new PowerBIClient(new Uri(ApiUrl), new TokenCredentials(bearerToken)))
             {
                 IList<Report> reportList = client.Reports.GetReports(GroupId).Value;
                 Report[] reportArr = new Report[reportList.Count];
@@ -237,10 +239,10 @@ namespace PowerBIEmbedded.Controllers
                     accessLevel = TokenAccessLevel.View;
                     break;
             }
-            var tokenCredentials = await AuthenticateAsync(masterUser, ADcode);
+            string bearerToken = await AuthenticateAsync(masterUser, ADcode);
 
             // Create a Power BI Client object. It will be used to call Power BI APIs.
-            using (var client = new PowerBIClient(new Uri(ApiUrl), tokenCredentials))
+            using (var client = new PowerBIClient(new Uri(ApiUrl), new TokenCredentials(bearerToken)))
             {
                 // Get a list of reports.
                 var reports = await client.Reports.GetReportsInGroupAsync(GroupId);
@@ -260,6 +262,20 @@ namespace PowerBIEmbedded.Controllers
                 {
                     throw new System.Exception();
                 }
+
+                //if using AD auth dont generate token
+                /*
+                if (!String.IsNullOrEmpty(ADcode) || true) {
+                    return new TokenInfo
+                    {
+                        mode = accessLevel,
+                        EmbedToken = bearerToken,
+                        EmbedUrl = report.EmbedUrl,
+                        ReportId = report.Id,
+                        DatasetId = report.DatasetId
+                    };
+                }
+                /* */
                 GenerateTokenRequest generateTokenRequestParameters;
                 EmbedToken tokenResponse;
                 if (accessLevel == TokenAccessLevel.Create)
@@ -306,6 +322,7 @@ namespace PowerBIEmbedded.Controllers
                     throw new System.Exception("Failed to generate embed token.");
                 }
                 // Generate Embed Configuration.
+                string tokenType = String.IsNullOrEmpty(ADcode) ? "embed" : "AAD";
                 return new TokenInfo
                 {
                     mode = accessLevel,

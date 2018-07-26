@@ -39,10 +39,23 @@ export class PowerBIReport extends React.Component<TokenInfo, {}> {
         if (this.props.mode == "Create") {
             delete(reportProps.reportId);
             delete(reportProps.id);
-            this.report = this.powerbi.createReport(this.ref.current, reportProps) as pbi.Report;
+            //AD
+            let config: TokenInfo = {
+                accessToken: reportProps.accessToken,
+                type: 'report',
+                embedUrl: reportProps.embedUrl
+            }
+            console.log(reportProps);
+            this.report = this.powerbi.createReport(this.ref.current, config) as pbi.Report;
         } else {
+            let config: TokenInfo = {
+                accessToken: reportProps.accessToken,
+                type: 'report',
+                embedUrl: reportProps.embedUrl
+            }
             reportProps.permissions = pbimodels.Permissions.All;
-            this.report = new pbi.Report(this.powerbi, this.ref.current, reportProps);
+            console.log(reportProps);
+            this.report = new pbi.Report(this.powerbi, this.ref.current, config);
         }
     }
     componentDidMount() {
